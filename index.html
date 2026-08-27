@@ -1,0 +1,409 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notaquest</title>
+    <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl-fast.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+    />
+  </head>
+  <body>
+    <main class="container">
+      <h1>Notaquest</h1>
+      <p>
+        enabling adb on a meta quest (which is just a weird phone btw) is
+        PAINFUL! you have to get the slow meta horizon app, create an
+        organization, verify it by adding an authenticator or USING YOUR CREDIT
+        CARD and finally, being able to enable a thing androids could do in like
+        8 taps for years. it doesn't have to be a quest to enable adb. meta
+        still made it a quest for me to make this work for you, and it's gonna
+        suck, but it'll suck less than the normal way. i have uploaded 2 images
+        of forks for meta verification, i will update this message if it works
+        and i can do oauth. you need to use devtools and grab a cookie. i'm very
+        sorry. this seems to work better on mobile than on pc. tested on android
+        with google chrome. you may need to quickly accept a pairing
+        confirmation on the device and headset. firefox is not supported :(
+      </p>
+      <p>
+        i apologize for you having to give me the token, this isn't something
+        you should need to do to own your device, but sadly, it is required. you
+        can check the html (human friendly code), and you can log network
+        requests from the site. the only place it goes it to is my site with a
+        proxy to meta. yeah, i know what you're thinking if you get what that
+        means. the token goes to my site. i need to for this to work, i'm sorry,
+        there's a thing below explaining the code. i know i can't prove it, but
+        it's safe. if you're really paranoid, reset your password or log out of
+        the page you got the token from to invalidate the token. if i stole your
+        token i wouldn't be telling you to do this. you can even check if it
+        logs into your account before you reset it.
+      </p>
+      <details>
+        <summary>why does this use a proxy?</summary>
+        <p>
+          meta's api blocks requests from websites (CORS). the proxy forwards
+          your request to graph.oculus.com and nothing else. nothing is stored
+          or logged. you can
+          <a href="https://api.notaquest.owendeed.com" target="_blank"
+            >view the live worker source code</a
+          >
+          or check the network tab yourself. the code is a literal quine
+          program, if i change it, it will change.
+        </p>
+      </details>
+      <details>
+        <summary>why does this site look ancient?</summary>
+        <p>
+          this site is a one time tool, there's no point to make it look good.
+        </p>
+      </details>
+      <details>
+        <summary>what is the point?</summary>
+        <p>
+          normally, enabling ADB on your meta headset, is a PAIN to do, like the
+          amount of work rooting a normal phone takes if you're lucky. which is
+          still bad. you need to create a meta organization, and then verify
+          your account. verifying means a few options: enabling an authenticator
+          app for signing in, or using a credit card and putting a temporary
+          hold on it. that's for enabling the ability to control a device you
+          bought. and not even full access to it. this site lets you enable it
+          without any of that. the only annoying part is the meta token, which
+          sadly i don't think i can bypass. better than nothing i guess?
+        </p>
+      </details>
+      <details>
+        <summary>but i can't access devtools on my phone!</summary>
+        <p>
+          yeah. here's the best fix for that i can come up with for now. (check
+          back later if you really can't do this, once i get oauth it will be
+          much simpler). at the bottom click the generate token qr code button.
+          this will give you a qr code. scan it on your phone and go to the
+          link. it will be prefilled with your token so you don't need to type
+          it :)
+        </p>
+      </details>
+      <ol>
+        <li>
+          Log into
+          <a href="https://developers.meta.com/horizon/manage/" target="_blank"
+            >developers.meta.com/horizon/manage/</a
+          >
+        </li>
+        <li>Press F12 to open developer tools</li>
+        <li>Application → Cookies → click the site<br /></li>
+        <li>Find <code>oc_ac_at</code>, double-click the value, copy it</li>
+        <li>
+          Paste it below (if you need to type manually, make sure the OC or FRL
+          at the beginning is capitalized!)
+        </li>
+      </ol>
+      <input
+        id="token"
+        placeholder="paste your Meta token here"
+        style="width: 100%; max-width: 500px"
+      />
+      <br /><br />
+      <button onclick="showQR()">
+        generate prefilled token qr code for mobile
+      </button>
+      <br />
+      <br />
+      <img id="qr" style="width: 300px; image-rendering: pixelated" />
+      <br />
+      <button id="go" onclick="enableADB()">enable adb</button>
+      <p id="nobt" style="display: none"></p>
+      <p id="status"></p>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <script>
+      if (!navigator.bluetooth) {
+        document.getElementById("go").style.display = "none";
+        document.getElementById("nobt").style.display = "block";
+        document.getElementById("nobt").textContent =
+          "your browser doesn't support web bluetooth. grab your token, generate a qr code below, and scan it on your phone in chrome or another web bluetooth supported device. respect to the firefox people seeing this.";
+      }
+      var params = new URLSearchParams(location.search);
+      if (params.get("token"))
+        document.getElementById("token").value = params.get("token");
+      var SERVICE = "0000feb8-0000-1000-8000-00805f9b34fb";
+      var WRITE_UUID = "7a442881-509c-47fa-ac02-b06a37d9eb76";
+
+      function status(msg) {
+        document.getElementById("status").textContent = msg;
+      }
+
+      function showQR() {
+        var token = document.getElementById("token").value.trim();
+        if (!token) {
+          status("paste your token first");
+          return;
+        }
+        if (!token.startsWith("OC") && !token.startsWith("FRL")) {
+          status(
+            "that doesn't look like a meta token. it should start with OC or FRL.",
+          );
+          return;
+        }
+        var qr = qrcode(0, "L");
+        qr.addData("https://notaquest.owendeed.com/?token=" + token);
+        qr.make();
+        document.getElementById("qr").src = qr.createDataURL();
+      }
+
+      // protobuf helpers
+      function varint(n) {
+        var r = [];
+        do {
+          var b = n & 0x7f;
+          n >>>= 7;
+          if (n > 0) b |= 0x80;
+          r.push(b);
+        } while (n > 0);
+        return r;
+      }
+      function varintField(f, v) {
+        return [(f << 3) | 0].concat(varint(v));
+      }
+      function bytesField(f, d) {
+        return [(f << 3) | 2].concat(varint(d.length)).concat(Array.from(d));
+      }
+
+      function readVarint(buf, off) {
+        var r = 0,
+          s = 0;
+        while (off < buf.length) {
+          var b = buf[off++];
+          r |= (b & 0x7f) << s;
+          if (!(b & 0x80)) break;
+          s += 7;
+        }
+        return [r, off];
+      }
+
+      function parseProto(buf) {
+        var fields = {},
+          off = 0;
+        while (off < buf.length) {
+          var tag;
+          [tag, off] = readVarint(buf, off);
+          var fn = tag >> 3,
+            wt = tag & 7;
+          if (wt === 0) {
+            var val;
+            [val, off] = readVarint(buf, off);
+            fields[fn] = val;
+          } else if (wt === 2) {
+            var ln;
+            [ln, off] = readVarint(buf, off);
+            fields[fn] = buf.slice(off, off + ln);
+            off += ln;
+          } else break;
+        }
+        return fields;
+      }
+
+      // chunk data with 2-byte framing header
+      function makeChunks(data) {
+        var chunks = [];
+        for (var i = 0; i < data.length; i += 18) {
+          var slice = data.slice(i, i + 18);
+          var seq = Math.floor(i / 18);
+          var last = i + 18 >= data.length;
+          chunks.push(
+            new Uint8Array(
+              [(last ? 0x80 : 0x00) | (seq >> 8), seq & 0xff].concat(
+                Array.from(slice),
+              ),
+            ),
+          );
+        }
+        return chunks;
+      }
+
+      // send chunked data, then poll-read the response
+      async function sendAndReceive(writeChar, data) {
+        for (var c of makeChunks(Array.from(data))) {
+          await writeChar.writeValueWithoutResponse(c);
+          await new Promise((r) => setTimeout(r, 100));
+        }
+        await new Promise((r) => setTimeout(r, 3000));
+        var response = [];
+        for (var i = 0; i < 200; i++) {
+          await new Promise((r) => setTimeout(r, 100));
+          var val = new Uint8Array((await writeChar.readValue()).buffer);
+          if (val.length <= 1 || val[0] === 0xff) break;
+          response.push(...val.slice(2));
+          if (val[0] & 0x80) break;
+        }
+        return new Uint8Array(response);
+      }
+
+      // HMAC-SHA256 using Web Crypto
+      async function hmacSHA256(key, message) {
+        var k = await crypto.subtle.importKey(
+          "raw",
+          key,
+          { name: "HMAC", hash: "SHA-256" },
+          false,
+          ["sign"],
+        );
+        return new Uint8Array(await crypto.subtle.sign("HMAC", k, message));
+      }
+
+      // encrypt a plaintext request with the shared key (nonce + ciphertext)
+      function encrypt(plaintext, sharedKey) {
+        var nonce = nacl.randomBytes(24);
+        var ciphertext = nacl.box.after(plaintext, nonce, sharedKey);
+        var out = new Uint8Array(24 + ciphertext.length);
+        out.set(nonce);
+        out.set(ciphertext, 24);
+        return out;
+      }
+
+      // decrypt a response (first 24 bytes = nonce, rest = ciphertext)
+      function decrypt(data, sharedKey) {
+        return nacl.box.open.after(
+          data.slice(24),
+          data.slice(0, 24),
+          sharedKey,
+        );
+      }
+
+      async function enableADB() {
+        try {
+          var token = document.getElementById("token").value.trim();
+          if (!token) {
+            status("paste your token first");
+            return;
+          }
+          if (!token.startsWith("OC") && !token.startsWith("FRL")) {
+            status(
+              "that doesn't look like a meta token. it should start with OC or FRL.",
+            );
+            return;
+          }
+
+          // 1. get device_secret from meta api
+          status("fetching device secret...");
+          var resp = await fetch("https://api.notaquest.owendeed.com", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body:
+              "access_token=" +
+              encodeURIComponent(token) +
+              "&doc_id=25735612872735053&variables=%7B%7D",
+          });
+          var json = await resp.json();
+          var secret = json?.data?.viewer?.user?.device_secret;
+          if (!secret) {
+            status(
+              "couldn't get device secret. is your token valid? sign out of the meta page, sign back in, and grab a new token. reloading might also work.",
+            );
+            return;
+          }
+          var deviceSecret = new Uint8Array(
+            secret.match(/.{2}/g).map((b) => parseInt(b, 16)),
+          );
+
+          // 2. connect bluetooth
+          status("select your quest...");
+          var device = await navigator.bluetooth.requestDevice({
+            acceptAllDevices: true,
+            optionalServices: [SERVICE],
+          });
+          var server = await device.gatt.connect();
+          var service = await server.getPrimaryService(SERVICE);
+          var writeChar = await service.getCharacteristic(WRITE_UUID);
+
+          // 3. wait for user to accept pairing on quest
+          status(
+            "accept the bluetooth pairing on your quest and mobile device if you see it. (just wait 15 seconds if you don't see it)",
+          );
+          await new Promise((r) => setTimeout(r, 15000));
+
+          // 4. send HELLO
+          status("connecting to quest...");
+          var keypair = nacl.box.keyPair();
+          var helloBody = bytesField(1, keypair.publicKey).concat(
+            bytesField(2, nacl.randomBytes(16)),
+          );
+          var hello = new Uint8Array(
+            varintField(1, 1).concat(
+              varintField(2, 1),
+              varintField(3, 1),
+              bytesField(4, helloBody),
+            ),
+          );
+          var helloResp = await sendAndReceive(writeChar, hello);
+          if (!helloResp.length) {
+            status(
+              "quest didn't respond. it's battery may have died, you didn't accept a confirmation, or it went out of bluetooth range. check each and try again.",
+            );
+            return;
+          }
+
+          // 5. parse server key and compute shared secret
+          var signedData = parseProto(parseProto(parseProto(helloResp)[3])[1]);
+          var sharedKey = nacl.box.before(signedData[1], keypair.secretKey);
+
+          // 6. AUTHENTICATE
+          status("authenticating...");
+          var hmac = await hmacSHA256(deviceSecret, signedData[2]);
+          var authReq = new Uint8Array(
+            varintField(1, 1).concat(
+              varintField(2, 2),
+              varintField(3, 2),
+              bytesField(4, bytesField(1, hmac)),
+            ),
+          );
+          var authRespRaw = await sendAndReceive(
+            writeChar,
+            encrypt(authReq, sharedKey),
+          );
+          if (!authRespRaw.length) {
+            status(
+              "no auth response, did your headset go out of bluetooth range or die? check each and try again.",
+            );
+            return;
+          }
+          var authResp = parseProto(decrypt(authRespRaw, sharedKey));
+          if (authResp[2] !== 0) {
+            status("authentication failed, try again? this shouldn't happen.");
+            return;
+          }
+
+          // 7. DEV_MODE_SET
+          status("enabling adb...");
+          var devReq = new Uint8Array(
+            varintField(1, 1).concat(
+              varintField(2, 6001),
+              varintField(3, 3),
+              bytesField(4, varintField(1, 1)),
+            ),
+          );
+          var devRespRaw = await sendAndReceive(
+            writeChar,
+            encrypt(devReq, sharedKey),
+          );
+          if (devRespRaw.length) {
+            var devResp = parseProto(decrypt(devRespRaw, sharedKey));
+            if (devResp[2] === 0) {
+              status(
+                "done! adb should be enabled. restarting your headset may be required for it to work.",
+              );
+              return;
+            }
+          }
+          status("sent! check if adb is enabled.");
+        } catch (e) {
+          status(
+            "error: " +
+              e.message +
+              ", this error isn't something i have handling for, report an issue on the link at the bottom of the page with this message.",
+          );
+        }
+      }
+    </script>
+  </body>
+</html>
