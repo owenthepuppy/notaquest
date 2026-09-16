@@ -138,10 +138,36 @@
         <a href="https://addons.mozilla.org/firefox/addon/tampermonkey/"
           >firefox (+firefox based browsers) extension</a
         >
+        <details>
+          <summary>
+            IMPORTANT: additional setup for (most) chromium based browsers
+            (required or silently doesn't work)
+          </summary>
+          <p>
+            the following instructions are required for chromium-based browsers
+            or it will do nothing and not work. if you don't have the final
+            switch then try it without doing it. if you just see the Meta
+            account page when you click the get token button, this is your
+            problem.
+          </p>
+          <li>
+            click the extensions icon (normally in the top right), you should
+            see the tampermonkey extension
+          </li>
+          <li>click the 3 vertical dots and then click manage extension</li>
+          <li>turn on the "Allow User Scripts"</li>
+          <li>it should now work</li>
+        </details>
       </details>
       <details>
         <summary>automated method (tampermonkey required)</summary>
         <ol>
+          <li>
+            <p>
+              first off, please make sure tampermonkey is installed. you can
+              check the dropdown above this one for instructions.
+            </p>
+          </li>
           <li>
             <button onclick="window.open('/grab.user.js')">
               install tampermonkey script for automating the token process
