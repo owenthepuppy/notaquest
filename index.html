@@ -121,13 +121,53 @@
           it :)
         </p>
       </details>
-      <button onclick="window.open('/grab.user.js')">
-        get token with tampermonkey (tampermonkey must be installed)
-      </button>
-      <p>
-        after clicking install, close the blank page it may leave and reload
-        this page, then the token box will be prefilled.
-      </p>
+      <details>
+        <summary>what is tampermonkey and how do i get it?</summary>
+        <p>
+          tampermonkey is an extension which lets you install scripts to modify
+          what websites do, such as automatically grabbing cookies when going to
+          a site! which is exactly what this site uses it for. if you can, this
+          is the best way to get a token.
+        </p>
+        <a href="https://www.tampermonkey.net/">tampermonkey website</a><br />
+        <a
+          href="https://chromewebstore.google.com/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo"
+          >chrome (+chromium based browsers) extension</a
+        >
+        <br />
+        <a href="https://addons.mozilla.org/firefox/addon/tampermonkey/"
+          >firefox (+firefox based browsers) extension</a
+        >
+      </details>
+      <details>
+        <summary>automated method (tampermonkey required)</summary>
+        <ol>
+          <li>
+            <button onclick="window.open('/grab.user.js')">
+              install tampermonkey script for automating the token process
+              (tampermonkey must be installed)
+            </button>
+          </li>
+          <li>
+            <p>
+              after clicking install, click the get token automatically button,
+              which will open a new notaquest tab with your token prefilled.
+            </p>
+          </li>
+          <li>
+            <button
+              onclick="
+                window.location.href = 'https://secure.oculus.com/#notaquest'
+              "
+            >
+              get token automatically (tampermonkey script must be installed)
+            </button>
+          </li>
+          <li>
+            <p>feel free to uninstall the tampermonkey script afterwards.</p>
+          </li>
+        </ol>
+      </details>
       <details>
         <summary>manual method (no tampermonkey)</summary>
         <ol>
