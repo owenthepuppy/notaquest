@@ -54,10 +54,15 @@
         still made it a quest for me to make this work for you, and it's gonna
         suck, but it'll suck less than the normal way. i have uploaded 2 images
         of forks for meta verification, i will update this message if it works
-        and i can do oauth. you need to use devtools and grab a cookie. i'm very
-        sorry. this seems to work better on mobile than on pc. tested on android
-        with google chrome. you may need to quickly accept a pairing
-        confirmation on the device and headset. firefox is not supported :(
+        and i can do oauth. update: it did not. you can use the tampermonkey
+        script to automate it or use devtools and grab a cookie. i'm very sorry.
+        this seems to work better on mobile than on pc. tested on android with
+        google chrome. you may need to quickly accept a pairing confirmation on
+        the device and headset. the tampermonkey script cannot be ran on Android
+        Chrome since it doesn't support extensions. you can use firefox for it
+        and swap to Chrome later, use a browser that supports bluetooth and
+        extensions, or do it on a pc first and swap later. firefox is not
+        supported for bluetooth :(
       </p>
       <p>
         i apologize for you having to give me the token, this isn't something
@@ -91,12 +96,6 @@
         </p>
       </details>
       <details>
-        <summary>why does this site look ancient?</summary>
-        <p>
-          this site is a one time tool, there's no point to make it look good.
-        </p>
-      </details>
-      <details>
         <summary>what is the point?</summary>
         <p>
           normally, enabling ADB on your meta headset, is a PAIN to do, like the
@@ -113,29 +112,39 @@
       <details>
         <summary>but i can't access devtools on my phone!</summary>
         <p>
-          yeah. here's the best fix for that i can come up with for now. (check
-          back later if you really can't do this, once i get oauth it will be
-          much simpler). at the bottom click the generate token qr code button.
+          do the tampermonkey script on firefox/a browser on mobile with
+          extension support and swap to one with bluetooth after! or do the
+          following if you can do devtools on a pc but don't wanna do
+          tampermonkey: at the bottom click the generate token qr code button.
           this will give you a qr code. scan it on your phone and go to the
           link. it will be prefilled with your token so you don't need to type
           it :)
         </p>
       </details>
-      <ol>
-        <li>
-          Log into
-          <a href="https://developers.meta.com/horizon/manage/" target="_blank"
-            >developers.meta.com/horizon/manage/</a
-          >
-        </li>
-        <li>Press F12 to open developer tools</li>
-        <li>Application → Cookies → click the site<br /></li>
-        <li>Find <code>oc_ac_at</code>, double-click the value, copy it</li>
-        <li>
-          Paste it below (if you need to type manually, make sure the OC or FRL
-          at the beginning is capitalized!)
-        </li>
-      </ol>
+      <button onclick="window.open('/grab.user.js')">
+        get token with tampermonkey (tampermonkey must be installed)
+      </button>
+      <p>
+        after clicking install, close the blank page it may leave and reload
+        this page, then the token box will be prefilled.
+      </p>
+      <details>
+        <summary>manual method (no tampermonkey)</summary>
+        <ol>
+          <li>
+            Log into
+            <a
+              href="https://developers.meta.com/horizon/manage/"
+              target="_blank"
+              >developers.meta.com/horizon/manage/</a
+            >
+          </li>
+          <li>Press F12 to open developer tools</li>
+          <li>Application -> Cookies -> click the site</li>
+          <li>Find <code>oc_ac_at</code>, double-click the value, copy it</li>
+          <li>Paste it below</li>
+        </ol>
+      </details>
       <input
         id="token"
         placeholder="paste your Meta token here"
