@@ -186,6 +186,10 @@
         <li>Paste it below</li>
       </ol>
     </details>
+    <label>
+      <input type="checkbox" id="legacyAdb" role="switch">
+      Legacy ADB enable (for Quest Pro/older devices, try if it says Done!, but ADB didn't enable)
+    </label>
     <input id="token" placeholder="paste your Meta token here" style="width: 100%; max-width: 500px" />
     <br /><br />
     <button onclick="showQR()">
@@ -460,11 +464,12 @@
           return;
         }
 
-        // 7. DEV_MODE_SET
+        // 7. DEV_MODE_SET / legacy adb enable
         status("enabling adb...");
+        var method = document.getElementById("legacyAdb").checked ? 6005 : 6001;
         var devReq = new Uint8Array(
           varintField(1, 1).concat(
-            varintField(2, 6001),
+            varintField(2, method),
             varintField(3, 3),
             bytesField(4, varintField(1, 1)),
           ),
